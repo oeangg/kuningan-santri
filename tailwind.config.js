@@ -8,8 +8,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
+        twBlue: "var(--blue)",
+        twPurple: "var(--purple)",
+        twYellow: "var(--yellow)",
+        twPink: "var(--pink)",
+        twWhite: "var(--white)",
       },
     },
   },
