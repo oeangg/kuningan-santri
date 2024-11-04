@@ -14,7 +14,7 @@ export default async function Layout({ children }) {
     redirect("/");
   }
 
-  const findUser = await prisma.session.findUnique({
+  const findUser = await prisma.session.findFirst({
     where: {
       id: sessionID,
     },
@@ -72,7 +72,7 @@ export default async function Layout({ children }) {
         </div>
         <div className="absolute bottom-20 left-0   w-full  px-8">
           <form action={LogoutUser}>
-            <button className=" bg-sky-500 flex justify-center  w-full rounded-2xl  px-4 py-2 items-center hover:bg-sky-600">
+            <button className=" bg-sky-500 flex justify-center font-bold  w-full rounded-2xl  px-4 py-2 items-center hover:bg-sky-600">
               Logout
             </button>
           </form>

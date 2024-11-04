@@ -1,42 +1,14 @@
 "use server";
 
-import { z } from "zod";
 import { prisma } from "@/utils/prisma";
 import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
-//chema password by zod
-const passwordSchema = z
-  .string()
-  .min(8, { message: "Kata sandi harus terdiri minimal 8 karakter" })
-  .regex(/(?=.*?[A-Z])/, {
-    message: "Kata sandi harus mengandung setidaknya satu huruf besar",
-  })
-  .regex(/(?=.*?[0-9])/, {
-    message: "Kata sandi harus mengandung setidaknya satu angka",
-  });
-
-//schema user by zod
-const UserSchema = z.object({
-  email: z.string().email({ message: "Format email tidak valid" }),
-  password: passwordSchema,
-});
-
 export async function LoginAcc(_inState, formData) {
   //validasi form user by zod
 
-  const isValidUser = UserSchema.safeParse(
-    Object.fromEntries(formData.entries())
-  );
-
-  if (!isValidUser.success) {
-    return {
-      Error: isValidUser.error.flatten().fieldErrors,
-    };
-  }
-
-  const { email, password } = isValidUser.data;
+  const { email, password } = Object.fromEntries(formData.entries());
 
   //cek email
   const findUser = await prisma.user.findFirst({
