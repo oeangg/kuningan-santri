@@ -1,30 +1,27 @@
-import Link from "next/link";
-import { IoSchool } from "react-icons/io5";
-import { FormRegister } from "@/components/form-register";
+import { FormRegister } from "@/components/form/form-auth.register";
+import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
+import { Tittle } from "@/components/auth/tittle";
+import { Footer } from "@/components/auth/footer";
+import { Logo } from "@/components/auth/logo";
 
-export default function Page() {
+export default async function Page() {
+  const cookie = await cookies();
+
+  const sessionID = cookie.get("sessionID")?.value;
+
+  if (sessionID) {
+    redirect("/dashboard");
+  }
+
   return (
-    <div className=" max-w-3xl h-4/6 w-full bg-twYellow  border-2 border-twWhite  rounded-3xl flex items-center shadow-xl ">
-      <div className="w-2/3 h-[103%] text-sky-400 font-normal text-lg bg-twWhite rounded-3xl p-20 space-y-3 flex flex-col justify-center">
-        <div className="-space-y-1">
-          <h1 className=" text-2xl font-bold"> Register</h1>
-          <h2 className="text-sm font-thin">Create an account to continue</h2>
-        </div>
+    <div className="h-6/7 flex w-full max-w-3xl flex-col items-center rounded-3xl border-2 border-twWhite bg-twYellow shadow-xl sm:h-4/6 sm:flex-row">
+      <div className="flex w-[102%] flex-col justify-center space-y-4 rounded-3xl bg-twWhite p-10 text-lg font-normal text-sky-400 sm:h-[102%] sm:w-2/3 sm:p-20">
+        <Tittle label="register" />
         <FormRegister />
-        <p className="text-sm font-thin ">
-          Have an accounts?
-          <Link href="/login" className="ml-2 text-sky-400 font-bold">
-            Login
-          </Link>{" "}
-        </p>
+        <Footer label="register" />
       </div>
-      <div className="w-1/3 h-full text-sky-300 flex flex-col text-base font-bold justify-center items-center ">
-        <IoSchool size={64} className="text-sky-400" />
-        <h1>
-          kuningan
-          <span className=" text-xl text-sky-400">santri</span>{" "}
-        </h1>
-      </div>
+      <Logo />
     </div>
   );
 }

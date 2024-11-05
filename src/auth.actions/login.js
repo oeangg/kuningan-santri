@@ -2,7 +2,6 @@
 
 import { prisma } from "@/utils/prisma";
 import bcrypt from "bcrypt";
-import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
 
 export async function LoginAcc(_inState, formData) {
@@ -10,7 +9,7 @@ export async function LoginAcc(_inState, formData) {
 
   const { email, password } = Object.fromEntries(formData.entries());
 
-  //cek email
+  // cek email
   const findUser = await prisma.user.findFirst({
     where: {
       email,
@@ -18,27 +17,47 @@ export async function LoginAcc(_inState, formData) {
   });
 
   if (!findUser) {
-    return { succed: false, message: "Email tidak ditemukan!" };
+    return {
+      status: "error",
+      message: "Email tidak ditemukan, silahkan login kembali!",
+    };
   }
 
   //cek password
   const isPasswordMatch = await bcrypt.compare(password, findUser.password);
 
   if (!isPasswordMatch) {
-    return { succed: false, message: "Password Salah!" };
+    return { status: "error", message: "Password Salah!" };
+  }
+
+  //{ status: "error", message: "Password Salah!" };
+
+  //cek jika masih ada session aktif
+  const findSession = await prisma.session.findFirst({
+    where: {
+      userID: findUser.id,
+    },
+  });
+
+  if (findSession) {
+    await prisma.session.delete({
+      where: {
+        userID: findSession.userID,
+      },
+    });
   }
 
   //jika password benar buat session
+  //jika session sudah tidak aktif
   const sessionID = await prisma.session.create({
     data: {
       userID: findUser.id,
     },
   });
 
-  //buat cookies
+  // //buat cookies
   const cookiesID = await cookies();
 
   cookiesID.set("sessionID", sessionID.id);
-  console.log("Login sukses!");
-  redirect("/dashboard");
+  // redirect("/dashboard");
 }

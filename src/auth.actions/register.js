@@ -14,7 +14,7 @@ export async function RegisterAcc(_inState, formData) {
   });
 
   if (findEmail) {
-    return { succed: false, message: "Email sudah ada, isikan yang lain!!" };
+    return { status: "error", message: "Email sudah ada, isikan yang lain!!" };
   }
   //hash password
   const hashPassword = await bcrypt.hash(password, 12);
@@ -28,9 +28,9 @@ export async function RegisterAcc(_inState, formData) {
         password: hashPassword,
       },
     });
-    return { succed: true, message: "Berhasil register data,silahkan Login!" };
+    return { status: "OK", message: "Register data berhasil,silahkan Login!" };
   } catch (error) {
     console.log(error);
-    return { succed: false, message: "Gagal register data" };
+    return { status: "error", message: "Gagal register data" };
   }
 }
