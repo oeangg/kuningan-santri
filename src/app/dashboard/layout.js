@@ -1,27 +1,20 @@
 import { redirect } from "next/navigation";
-import { prisma } from "@/utils/prisma";
-import { CekSession } from "@/lib/cek-session";
+
+import { CekCookies } from "@/lib/cek-cookies";
+import { IsSessionActive } from "@/actions.other/session.find";
 import { SideBarTop } from "@/components/dashboard/sidebar-top";
-import { SideBarLink } from "@/components/dashboard/sidebar-link";
-import { SideBarLogout } from "@/components/dashboard/sidebar-logout";
+import { FormLogout } from "@/components/form/form-auth.logout";
 import { Header } from "@/components/dashboard/header";
 
 export default async function Layout({ children }) {
   //cek cookies
-  const isSessionActive = await CekSession();
+  const cookiesSessionID = await CekCookies();
 
-  if (!isSessionActive) {
+  if (!cookiesSessionID) {
     redirect("/");
   }
 
-  const findUser = await prisma.session.findFirst({
-    where: {
-      id: isSessionActive,
-    },
-    include: {
-      User: true,
-    },
-  });
+  const findUser = await IsSessionActive(cookiesSessionID);
 
   //   jika user tidak ditemukan keluar
   if (!findUser) {
@@ -32,18 +25,15 @@ export default async function Layout({ children }) {
   const sessionID = findUser.id; //sessionID
 
   return (
-    <section className="flex h-screen w-full bg-twBlue px-6 py-4">
-      <div className="relative w-1/6 space-y-16">
-        <SideBarTop />
-        <SideBarLink />
-        <SideBarLogout sessionID={sessionID} />
+    <section className="flex w-full flex-col">
+      <Header nama={nama} />
+
+      <div className="fixed bottom-0 left-0 top-0 flex w-1/6 flex-col justify-between border-r-2 bg-twBlue p-1">
+        <SideBarTop nama={nama} />
+        <FormLogout sessionID={sessionID} />
       </div>
-      <div className="flex w-5/6 flex-col space-y-4 pb-8">
-        <Header nama={nama} />
-        <div className="h-full w-full overflow-y-auto rounded-3xl bg-twWhite p-4">
-          {children}
-        </div>
-      </div>
+
+      {children}
     </section>
   );
 }

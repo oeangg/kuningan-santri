@@ -1,11 +1,11 @@
 import React from "react";
-import { CekSession } from "@/lib/cek-session";
+import { CekCookies } from "@/lib/cek-cookies";
 import { redirect } from "next/navigation";
 
 export default async function Layout({ children }) {
-  const isSessionActive = await CekSession();
+  const cookiesSessionID = await CekCookies();
 
-  if (isSessionActive) {
+  if (cookiesSessionID) {
     redirect("/dashboard");
   }
 

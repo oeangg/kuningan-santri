@@ -7,7 +7,7 @@ export const Tittle = ({ label }) => {
         {" "}
         {label === "login" ? "Login" : "Register"}{" "}
       </h1>
-      <h2 className="text-sm font-thin">
+      <h2 className="text-sm font-light">
         {label === "login"
           ? "Welcome back, please login to continue"
           : "Create an account to continue"}

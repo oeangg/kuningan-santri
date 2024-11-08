@@ -18,10 +18,20 @@ body {
 
 @layer base {
   input {
-    @apply w-full rounded-lg border border-twBlue px-3 py-2 placeholder:text-sm placeholder:font-thin placeholder:text-slate-300 focus:border-2 focus:outline-none;
+    @apply w-full rounded-lg border border-twBlue placeholder:text-sm placeholder:font-light placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none;
   }
 
   button {
     @apply w-full rounded-lg bg-sky-400 px-3 py-2 text-lg font-normal text-twWhite hover:bg-sky-500;
+  }
+}
+
+@layer components {
+  .input-small {
+    @apply px-3 py-1;
+  }
+
+  .input-primary {
+    @apply px-3 py-2;
   }
 }

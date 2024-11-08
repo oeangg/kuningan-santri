@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const Footer = ({ label }) => {
   return (
-    <p className="text-sm font-thin">
+    <p className="text-sm font-light">
       {label === "login" ? `Don't have accounts?` : `Have an accounts?`}
       <Link
         href={label === "login" ? `/register` : `/login`}
