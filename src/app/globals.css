@@ -18,7 +18,7 @@ body {
 
 @layer base {
   input {
-    @apply w-full rounded-lg border border-twBlue placeholder:text-sm placeholder:font-light placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none;
+    @apply w-full rounded-lg border border-twBlue placeholder:text-base placeholder:font-extralight placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none;
   }
 
   button {

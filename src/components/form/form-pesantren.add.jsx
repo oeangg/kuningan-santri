@@ -1,10 +1,71 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useActionState } from "react";
+import { SavePesantren } from "@/actions.other/pesantren-save";
 import TextareaAutosize from "react-textarea-autosize";
 import { APIDesa } from "@/actions.other/api-village";
+import { z } from "zod";
+const MAX_FILE_SIZE = 1024 * 1024 * 3;
+const ACCEPTED_IMAGE_MIME_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+];
+
+const schemaGambar = z
+  .array(z.instanceof(File), {
+    message: "Silahkan upload gambar kembali ",
+  })
+  .max(3, { message: "Maximal upload 3 gambar" })
+  .min(1, { message: "miminal upload 1 gambar" })
+  .refine(
+    (files) =>
+      files.every(
+        (file) =>
+          file.size <= MAX_FILE_SIZE &&
+          ACCEPTED_IMAGE_MIME_TYPES.includes(file.type),
+      ),
+    {
+      message:
+        "Format gambar harus .jpeg, .jpg, .png total ukuran gambar 3MB !",
+    },
+  );
+
+const schemaPesantren = z.object({
+  name: z.string().min(7, { message: "Nama harus terdiri minimal 7 karakter" }),
+  profil: z
+    .string()
+    .min(20, { message: "Profil harus terdiri minimal 20 karakter" }),
+  leader: z
+    .string()
+    .min(5, { message: "Pimpinan harus terdiri minimal 5 karakter" }),
+  type: z.string().min(1, { message: "Type pesantren harus diisi!" }),
+  methode: z
+    .string()
+    .min(10, { message: "Method harus terdiri minimal 10 karakter" }),
+  facility: z
+    .string()
+    .min(5, { message: "Fasilitas harus terdiri minimal 5 karakter" }),
+  address: z
+    .string()
+    .min(10, { message: "Alamat harus terdiri minimal 5 karakter" }),
+
+  district: z.string().min(1, { message: "Kecamatan harus diisi!" }),
+  pics: schemaGambar,
+  village: z.string().min(1, { message: "Desa harus diisi!" }),
+  siteLink: z.string(),
+  contactEmail: z.string().email({ message: "format email tidak valid!" }),
+  contactPhone: z
+    .string()
+    .min(9, { message: "Phone harus terdiri minimal 8 digit" }),
+  mapLink: z.string().min(1, { message: "Maplink harus diisi!" }),
+});
 
 export const FormAddPesantren = ({ kecamatan }) => {
   const [desa, setDesa] = useState([]); //default
+  const [errors, setErrors] = useState([]);
+
+  const [state, formAction, isPending] = useActionState(SavePesantren, null);
 
   useEffect(() => {
     let desaSort = desa.sort(function (a, b) {
@@ -36,12 +97,24 @@ export const FormAddPesantren = ({ kecamatan }) => {
     return 0;
   });
 
+  async function validasiData(formData) {
+    const isValidPesantren = schemaPesantren.safeParse(
+      Object.fromEntries(formData.entries()),
+    );
+
+    if (!isValidPesantren.success) {
+      setErrors(isValidPesantren.error.flatten().fieldErrors);
+    }
+
+    await formAction(formData);
+  }
+
   // sort alpabeth desa dari APi
 
   return (
     <form
-      action=""
-      className="flex w-full flex-wrap rounded-xl bg-sky-100 px-8 py-5 text-base font-normal text-sky-500"
+      action={validasiData}
+      className="flex w-full flex-wrap rounded-lg bg-sky-50 px-8 py-5 text-base font-normal text-sky-400"
     >
       <div className="basis-1/2 space-y-2 px-2">
         <div>
@@ -52,6 +125,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input nama"
             className="input-small"
           />
+          {errors?.name && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.name}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="" className="block">
@@ -62,6 +140,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input profil"
             className="w-full rounded-lg border border-twBlue px-3 py-1 placeholder:text-sm placeholder:font-extralight placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none"
           />
+          {errors?.profil && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.profil}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="">Pimpinan pesantren</label>
@@ -71,6 +154,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input nama pimpinan"
             className="input-small"
           />
+          {errors?.leader && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.leader}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="" className="block">
@@ -80,13 +168,16 @@ export const FormAddPesantren = ({ kecamatan }) => {
             name="type"
             className="w-full rounded-lg border border-twBlue px-3 py-1 placeholder:text-sm placeholder:font-extralight placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none"
           >
-            <option value="volvo" disabled>
-              Pilih Type pesantren
-            </option>
-            <option value="modern">Pesantren Tradisional</option>
-            <option value="saab">Pesantren Modern</option>
-            <option value="mercedes">Pesantren Semi Modern</option>
+            <option disabled>Pilih Type pesantren</option>
+            <option value="Tradisional">Pesantren Tradisional</option>
+            <option value="Modern">Pesantren Modern</option>
+            <option value="Semi Modern">Pesantren Semi Modern</option>
           </select>
+          {errors?.type && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.type}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="" className="block">
@@ -97,26 +188,41 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input methode belajar"
             className="w-full rounded-lg border border-twBlue px-3 py-1 placeholder:text-sm placeholder:font-extralight placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none"
           />
+          {errors?.methode && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.methode}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="">Input photo</label>
           <input
             type="file"
             name="pics"
-            placeholder="Input file photo"
+            accept="image/png, image/jpeg, image/jpg"
             className="input-small"
             multiple
           />
+          {errors?.pics && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.pics}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="" className="block">
             Fasilitas
           </label>
           <TextareaAutosize
-            name="fasilitas"
+            name="facility"
             placeholder="Input fasilitas pesantren"
             className="w-full rounded-lg border border-twBlue px-3 py-1 placeholder:text-sm placeholder:font-extralight placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none"
           />
+          {errors?.facility && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.facility}
+            </p>
+          )}
         </div>
       </div>
       <div className="basis-1/2 space-y-2 px-2">
@@ -129,6 +235,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input alamat"
             className="w-full rounded-lg border border-twBlue px-3 py-1 placeholder:text-sm placeholder:font-extralight placeholder:text-slate-300 focus:border-2 focus:border-sky-300 focus:outline-none"
           />
+          {errors?.address && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.address}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="" className="block">
@@ -148,6 +259,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
               </option>
             ))}
           </select>
+          {errors?.district && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.district}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="" className="block">
@@ -167,6 +283,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
               </option>
             ))}
           </select>
+          {errors?.village && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.village}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="">Website Link</label>
@@ -176,6 +297,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input website "
             className="input-small"
           />
+          {errors?.siteLink && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.siteLink}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="">Map address Link</label>
@@ -185,6 +311,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input map address"
             className="input-small"
           />
+          {errors?.mapLink && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.mapLink}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="">Contact email</label>
@@ -194,6 +325,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input contact email"
             className="input-small"
           />
+          {errors?.contactEmail && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.contactEmail}
+            </p>
+          )}
         </div>
         <div>
           <label htmlFor="">Contact phone</label>
@@ -203,6 +339,11 @@ export const FormAddPesantren = ({ kecamatan }) => {
             placeholder="Input contact phone"
             className="input-small"
           />
+          {errors?.contactPhone && (
+            <p className="-mt-0 text-center text-xs font-light text-red-500">
+              {errors.contactPhone}
+            </p>
+          )}
         </div>
         <div>
           <button>Save</button>
